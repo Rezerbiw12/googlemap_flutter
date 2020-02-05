@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:flutter/services.dart';
 
 class MapPage extends StatefulWidget {
   @override
@@ -26,21 +27,29 @@ class _MapPageState extends State<MapPage> {
   bool yourlocation = true;
   AnimationController _controllers;
 
-  getUserLocation() {
+  getUserLocation() async {
     var location = Location();
-    try {
-      location.onLocationChanged().listen((LocationData currentLocation) {
-        final center =
-            LatLng(currentLocation.latitude, currentLocation.longitude);
-        _center = center;
-        //getaddress(context,_center.latitude,_center.longitude);
-        setState(() {
-          isloading = true;
-        });
-      });
-    } on Exception {
-      return null;
+  try{
+    return await location.getLocation();
+  } on PlatformException catch(e){
+    if(e.code =='PERMISSION_DENIED'){
+
     }
+    return null ;
+  }
+  }
+
+  Future _goToMe() async {
+    final GoogleMapController controller = await _controller.future;
+    currentLocation = await getUserLocation();
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(currentLocation.latitude, currentLocation.longitude),
+          zoom: 20,
+        ),
+      ),
+    );
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -52,26 +61,26 @@ class _MapPageState extends State<MapPage> {
     centerPosition = position.target;
   }
 
-  void _onAddMarkerButtonPressed() {
-    InfoWindow infoWindow =
-        InfoWindow(title: "Location" + markers.length.toString());
-    Marker marker = Marker(
-      markerId: MarkerId(markers.length.toString()),
-      infoWindow: infoWindow,
-      position: centerPosition,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-    );
-    setState(() {
-      markers.add(marker);
-    });
-    _polyline.add(Polyline(
-      polylineId: PolylineId(_lastMapPosition.toString()),
-      visible: true,
-      //latlng is List<LatLng>
-      points: latlng,
-      color: Colors.blue,
-    ));
-  }
+  // void _onAddMarkerButtonPressed() {
+  //   InfoWindow infoWindow =
+  //       InfoWindow(title: "Location" + markers.length.toString());
+  //   Marker marker = Marker(
+  //     markerId: MarkerId(markers.length.toString()),
+  //     infoWindow: infoWindow,
+  //     position: centerPosition,
+  //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+  //   );
+  //   setState(() {
+  //     markers.add(marker);
+  //   });
+  //   _polyline.add(Polyline(
+  //     polylineId: PolylineId(_lastMapPosition.toString()),
+  //     visible: true,
+  //     //latlng is List<LatLng>
+  //     points: latlng,
+  //     color: Colors.blue,
+  //   ));
+  // }
 
   @override
   void initState() {
@@ -84,6 +93,13 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('การเดินทาง'),
+        leading: new IconButton(
+          icon: new Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Stack(
         children: <Widget>[
           GoogleMap(
@@ -99,8 +115,8 @@ class _MapPageState extends State<MapPage> {
                 _controllers.reset();
               }
             },
-            myLocationButtonEnabled: false,
             myLocationEnabled: true,
+            myLocationButtonEnabled: false,
             polylines: _polyline,
             onMapCreated: _onMapCreated,
             mapType: _currentMapType,
@@ -109,6 +125,23 @@ class _MapPageState extends State<MapPage> {
             initialCameraPosition: CameraPosition(
               target: _center,
               zoom: 16.0,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: ClipOval(
+                child: Material(
+                  color: Colors.blue, // button color
+                  child: InkWell(
+                    splashColor: Colors.white, // inkwell color
+                    child: SizedBox(
+                        width: 56, height: 56, child: Icon(Icons.near_me)),
+                    onTap: _goToMe,
+                  ),
+                ),
+              ),
             ),
           ),
           Center(
@@ -143,6 +176,7 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                     Center(
+                        //กรณี่เลื่อนหน้าจอ จะทำการแสดงการหมุน
                         child: onsearch
                             ? CircularProgressIndicator(
                                 strokeWidth: 2,

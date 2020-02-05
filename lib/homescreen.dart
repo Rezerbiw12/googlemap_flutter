@@ -11,9 +11,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: Center(
         child: MaterialButton(
-          child: Text('data'),
+          color: Colors.blue,
+          child: Text('Google Map'),
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(
