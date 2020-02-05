@@ -29,14 +29,12 @@ class _MapPageState extends State<MapPage> {
 
   getUserLocation() async {
     var location = Location();
-  try{
-    return await location.getLocation();
-  } on PlatformException catch(e){
-    if(e.code =='PERMISSION_DENIED'){
-
+    try {
+      return await location.getLocation();
+    } on PlatformException catch (e) {
+      if (e.code == 'PERMISSION_DENIED') {}
+      return null;
     }
-    return null ;
-  }
   }
 
   Future _goToMe() async {
@@ -94,11 +92,20 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('การเดินทาง'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
+        title: Text(
+          'การเดินทาง',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
         leading: new IconButton(
-          icon: new Icon(Icons.arrow_back, color: Colors.white),
+          icon: new Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.near_me,color: Colors.black,), onPressed: _goToMe
+          )],
       ),
       body: Stack(
         children: <Widget>[
@@ -125,23 +132,6 @@ class _MapPageState extends State<MapPage> {
             initialCameraPosition: CameraPosition(
               target: _center,
               zoom: 16.0,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: ClipOval(
-                child: Material(
-                  color: Colors.blue, // button color
-                  child: InkWell(
-                    splashColor: Colors.white, // inkwell color
-                    child: SizedBox(
-                        width: 56, height: 56, child: Icon(Icons.near_me)),
-                    onTap: _goToMe,
-                  ),
-                ),
-              ),
             ),
           ),
           Center(
