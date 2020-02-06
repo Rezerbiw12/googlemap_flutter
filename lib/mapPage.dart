@@ -61,26 +61,25 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     print('xxxxxsadsdas');
   }
 
-  // void _onAddMarkerButtonPressed() {
-  //   InfoWindow infoWindow =
-  //       InfoWindow(title: "Location" + markers.length.toString());
-  //   Marker marker = Marker(
-  //     markerId: MarkerId(markers.length.toString()),
-  //     infoWindow: infoWindow,
-  //     position: centerPosition,
-  //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-  //   );
-  //   setState(() {
-  //     markers.add(marker);
-  //   });
-  //   _polyline.add(Polyline(
-  //     polylineId: PolylineId(_lastMapPosition.toString()),
-  //     visible: true,
-  //     //latlng is List<LatLng>
-  //     points: latlng,
-  //     color: Colors.blue,
-  //   ));
-  // }
+  void _onAddMarkerButtonPressed() {
+    InfoWindow infoWindow = InfoWindow(title: "Location" + markers.length.toString());
+    Marker marker = Marker(
+      markerId: MarkerId(markers.length.toString()),
+      infoWindow: infoWindow,
+      position: centerPosition,
+      // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+    );
+    setState(() {
+      markers.add(marker);
+    });
+    _polyline.add(Polyline(
+      polylineId: PolylineId(_lastMapPosition.toString()),
+      visible: true,
+      //latlng is List<LatLng>
+      points: latlng,
+      color: Colors.redAccent,
+    ));
+  }
 
   @override
   void initState() {
@@ -128,7 +127,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 onsearch = true;
               });
               //getaddress(context,centerPosition.latitude,centerPosition.longitude);
-              await Future.delayed(Duration(seconds: 2));
+              await Future.delayed(Duration(seconds: 2)); //ตอน get data
               setState(() {
                 onsearch = false;
               });
@@ -145,10 +144,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             },
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
-            //polylines: _polyline,
+            polylines: _polyline,
             onMapCreated: _onMapCreated,
             mapType: _currentMapType,
-            //markers: markers,
+            markers: markers,
             onCameraMove: _onCameraMove,
             initialCameraPosition: CameraPosition(
               target: _center,
@@ -179,11 +178,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                       return Stack(
                         alignment: Alignment.center,
                         children: <Widget>[
-                          _buildContainer(50 * _controllerb.value),
+                          _buildContainer(50  * _controllerb.value),
                           _buildContainer(100 * _controllerb.value),
                           _buildContainer(150 * _controllerb.value),
-                          _buildContainer(200 * _controllerb.value),
-                          _buildContainer(250 * _controllerb.value),
+                          // _buildContainer(200 * _controllerb.value),
+                          // _buildContainer(250 * _controllerb.value),
                         ],
                       );
                     },
@@ -191,7 +190,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 : Container(),
           ),
           Center(
-            child: Transform.translate(
+            child: GestureDetector(
+              onTap: _onAddMarkerButtonPressed,
+              child: Transform.translate(
               offset: Offset(0, -30),
               child: Container(
                 width: 40,
@@ -220,6 +221,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 ),
               ),
             ),
+            )
           ),
           Center(
             child: Transform.translate(
@@ -326,7 +328,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       height: radius,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.blue.withOpacity(1 - _controllerb.value),
+        color: Colors.blueAccent.withOpacity(1 - _controllerb.value),
       ),
     );
   }
