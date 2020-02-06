@@ -9,7 +9,7 @@ class MapPage extends StatefulWidget {
   _MapPageState createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   double sticky = 0.0;
   bool isloading = false;
   LocationData currentLocation;
@@ -26,6 +26,7 @@ class _MapPageState extends State<MapPage> {
   bool onsearch = false;
   bool yourlocation = true;
   AnimationController _controllers;
+  AnimationController _controllerb;
 
   getUserLocation() async {
     var location = Location();
@@ -57,6 +58,7 @@ class _MapPageState extends State<MapPage> {
   void _onCameraMove(CameraPosition position) {
     Icon(Icons.map);
     centerPosition = position.target;
+    print('xxxxxsadsdas');
   }
 
   // void _onAddMarkerButtonPressed() {
@@ -83,6 +85,11 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     print('xxxxxxx');
+    _controllerb = AnimationController(
+      vsync: this,
+      lowerBound: 0.5,
+      duration: Duration(seconds: 2),
+    )..repeat();
     _center = LatLng(7.8773126, 98.3853486);
     _lastMapPosition = _center;
     super.initState();
@@ -104,30 +111,44 @@ class _MapPageState extends State<MapPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.near_me,color: Colors.black,), onPressed: _goToMe
-          )],
+          IconButton(
+              icon: Icon(
+                Icons.near_me,
+                color: Colors.black,
+              ),
+              onPressed: _goToMe)
+        ],
       ),
       body: Stack(
         children: <Widget>[
           GoogleMap(
-            onCameraIdle: () {
-              sticky = 0;
+            onCameraIdle: () async {
+              setState(() {
+                sticky = 0;
+                onsearch = true;
+              });
               //getaddress(context,centerPosition.latitude,centerPosition.longitude);
+              await Future.delayed(Duration(seconds: 2));
+              setState(() {
+                onsearch = false;
+              });
             },
             onCameraMoveStarted: () {
-              sticky = 10;
-              onsearch = true;
-              yourlocation = false;
+              setState(() {
+                sticky = 6;
+                onsearch = false;
+                yourlocation = false;
+              });
               if (yourlocation == false) {
                 _controllers.reset();
               }
             },
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
-            polylines: _polyline,
+            //polylines: _polyline,
             onMapCreated: _onMapCreated,
             mapType: _currentMapType,
-            markers: markers,
+            //markers: markers,
             onCameraMove: _onCameraMove,
             initialCameraPosition: CameraPosition(
               target: _center,
@@ -136,10 +157,10 @@ class _MapPageState extends State<MapPage> {
           ),
           Center(
             child: Transform.translate(
-              offset: Offset(0, 5 - sticky),
+              offset: Offset(0, -8 - sticky),
               child: Container(
                 height: 20,
-                width: 3,
+                width: 5,
                 decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.all(
@@ -150,13 +171,33 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           Center(
+            child: onsearch
+                ? AnimatedBuilder(
+                    animation: CurvedAnimation(
+                        parent: _controllerb, curve: Curves.fastOutSlowIn),
+                    builder: (BuildContext context, Widget child) {
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          _buildContainer(50 * _controllerb.value),
+                          _buildContainer(100 * _controllerb.value),
+                          _buildContainer(150 * _controllerb.value),
+                          _buildContainer(200 * _controllerb.value),
+                          _buildContainer(250 * _controllerb.value),
+                        ],
+                      );
+                    },
+                  )
+                : Container(),
+          ),
+          Center(
             child: Transform.translate(
-              offset: Offset(0, -25 - sticky),
+              offset: Offset(0, -30),
               child: Container(
                 width: 40,
                 height: 40,
-                decoration:
-                    BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                    color: Colors.redAccent, shape: BoxShape.circle),
                 child: Stack(
                   children: <Widget>[
                     Center(
@@ -166,14 +207,15 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                     Center(
-                        //กรณี่เลื่อนหน้าจอ จะทำการแสดงการหมุน
-                        child: onsearch
-                            ? CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              )
-                            : null)
+                      //กรณี่เลื่อนหน้าจอ จะทำการแสดงการหมุน
+                      child: onsearch
+                          ? CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : Container(),
+                    )
                   ],
                 ),
               ),
@@ -181,7 +223,7 @@ class _MapPageState extends State<MapPage> {
           ),
           Center(
             child: Transform.translate(
-              offset: Offset(0, 5),
+              offset: Offset(0, 3),
               child: Container(
                 width: 10,
                 height: 2,
@@ -242,8 +284,11 @@ class _MapPageState extends State<MapPage> {
                               children: <Widget>[
                                 TextField(
                                   decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: '    Enter a search term'),
+                                    border: InputBorder.none,
+                                    hintText: onsearch
+                                        ? '     กำลังหนาตำแหน่งของคุณ'
+                                        : '    ตำแหน่งของคุณ',
+                                  ),
                                 ),
                                 Row(
                                   children: <Widget>[
@@ -271,6 +316,17 @@ class _MapPageState extends State<MapPage> {
                 )),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildContainer(double radius) {
+    return Container(
+      width: radius,
+      height: radius,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.blue.withOpacity(1 - _controllerb.value),
       ),
     );
   }
