@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:http/http.dart' as http;
 
 class MapPage extends StatefulWidget {
   @override
@@ -10,6 +13,16 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
+  get() async {
+    var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=7.8776,98.3855&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
+    var res = await http.get(url);
+    var map = json.decode(utf8.decode(res.bodyBytes));
+    print("${map['results'][0]['formatted_address']}");
+    setState(() {
+      data = map['results'];
+    });
+  }
+  var data ;
   double sticky = 0.0;
   bool isloading = false;
   LocationData currentLocation;
@@ -27,6 +40,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   bool yourlocation = true;
   AnimationController _controllers;
   AnimationController _controllerb;
+  static GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   getUserLocation() async {
     var location = Location();
@@ -58,11 +72,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   void _onCameraMove(CameraPosition position) {
     Icon(Icons.map);
     centerPosition = position.target;
-    print('xxxxxsadsdas');
+    print('-----------------');
   }
 
   void _onAddMarkerButtonPressed() {
-    InfoWindow infoWindow = InfoWindow(title: "Location" + markers.length.toString());
+    InfoWindow infoWindow =
+        InfoWindow(title: "Location" + markers.length.toString());
     Marker marker = Marker(
       markerId: MarkerId(markers.length.toString()),
       infoWindow: infoWindow,
@@ -83,7 +98,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    print('xxxxxxx');
+    get();
+    print('สร้าง map');
     _controllerb = AnimationController(
       vsync: this,
       lowerBound: 0.5,
@@ -121,6 +137,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       body: Stack(
         children: <Widget>[
           GoogleMap(
+            onTap: (latlng){
+
+            },
             onCameraIdle: () async {
               setState(() {
                 sticky = 0;
@@ -178,7 +197,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                       return Stack(
                         alignment: Alignment.center,
                         children: <Widget>[
-                          _buildContainer(50  * _controllerb.value),
+                          _buildContainer(50 * _controllerb.value),
                           _buildContainer(100 * _controllerb.value),
                           _buildContainer(150 * _controllerb.value),
                           // _buildContainer(200 * _controllerb.value),
@@ -190,10 +209,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 : Container(),
           ),
           Center(
-            child: GestureDetector(
-              onTap: _onAddMarkerButtonPressed,
-              child: Transform.translate(
-              offset: Offset(0, -30),
+              child: GestureDetector(
+            onTap: _onAddMarkerButtonPressed,
+            child: Transform.translate(
+              offset: Offset(0, -30 - sticky),
               child: Container(
                 width: 40,
                 height: 40,
@@ -221,8 +240,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            )
-          ),
+          )),
           Center(
             child: Transform.translate(
               offset: Offset(0, 3),
