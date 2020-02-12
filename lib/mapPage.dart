@@ -6,6 +6,10 @@ import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+
+const LatLng SOURCE_LOCATION = LatLng(7.8773126, 98.3853486);
+const LatLng DEST_LOCATION = LatLng(7.8796, 98.3814);
 
 class MapPage extends StatefulWidget {
   @override
@@ -30,19 +34,28 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   LocationData currentLocation;
   Completer<GoogleMapController> _controller = Completer();
   LatLng _center;
-  Set<Marker> markers = Set();
+  Set<Marker> _markers = {};
   MapType _currentMapType = MapType.normal;
   LatLng centerPosition;
-  Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
+  //Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
   int _markerIdCounter = 0;
-  final Set<Polyline> _polyline = {};
+  Set<Polyline> _polylines = {};
   LatLng _lastMapPosition;
-  List<LatLng> latlng = List();
   bool onsearch = false;
   bool yourlocation = true;
   AnimationController _controllers;
   AnimationController _controllerb;
+  List<LatLng> polylineCoordinates = [];
+  PolylinePoints polylinePoints = PolylinePoints();
+  List<LatLng> latlng = List();
+  LatLng _new = LatLng(7.8773126, 98.3853486);
+  LatLng _news = LatLng(7.8796, 98.3814);
   static GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  String googleAPIKey = "AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
+
+  BitmapDescriptor sourceIcon;
+  BitmapDescriptor destinationIcon;
 
   getUserLocation() async {
     var location = Location();
@@ -69,6 +82,52 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
+    setMapPins();
+    setPolylines();
+  }
+
+  void setMapPins() {
+    setState(() {
+      // source pin
+      _markers.add(Marker(
+          markerId: MarkerId('sourcePin'),
+          position: SOURCE_LOCATION,
+          icon: sourceIcon));
+      // destination pin
+      _markers.add(Marker(
+          markerId: MarkerId('destPin'),
+          position: DEST_LOCATION,
+          icon: destinationIcon));
+    });
+  }
+
+  setPolylines() async {
+    List<PointLatLng> result = await polylinePoints?.getRouteBetweenCoordinates(
+        googleAPIKey,
+        SOURCE_LOCATION.latitude,
+        SOURCE_LOCATION.longitude,
+        DEST_LOCATION.latitude,
+        DEST_LOCATION.longitude);
+    if (result.isNotEmpty) {
+      // loop through all PointLatLng points and convert them
+      // to a list of LatLng, required by the Polyline
+      result.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+    }
+    setState(() {
+      // create a Polyline instance
+      // with an id, an RGB color and the list of LatLng pairs
+      Polyline polyline = Polyline(
+          polylineId: PolylineId('poly'),
+          color: Color.fromARGB(255, 40, 122, 198),
+          points: polylineCoordinates);
+
+      // add the constructed polyline as a set of points
+      // to the polyline set, which will eventually
+      // end up showing up on the map
+      _polylines.add(polyline);
+    });
   }
 
   void _onCameraMove(CameraPosition position) {
@@ -82,16 +141,18 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         title: data[0]['address_components'][1]['long_name'],
         snippet: data[0]['formatted_address']);
     Marker marker = Marker(
-      markerId: MarkerId(markers.length.toString()),
+      markerId: MarkerId(_markers.length.toString()),
       infoWindow: infoWindow,
       position: centerPosition,
       // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
     );
     setState(() {
-      markers.add(marker);
+      _markers.add(marker);
+      latlng.add(_new);
+      latlng.add(_news);
     });
-    _polyline.add(Polyline(
-      polylineId: PolylineId(_lastMapPosition.toString()),
+    _polylines.add(Polyline(
+      polylineId: PolylineId(_center.toString()),
       visible: true,
       //latlng is List<LatLng>
       points: latlng,
@@ -103,6 +164,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   void initState() {
     get();
     print('สร้าง map');
+
     _controllerb = AnimationController(
       vsync: this,
       lowerBound: 0.5,
@@ -164,10 +226,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             },
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
-            polylines: _polyline,
+            polylines: _polylines,
             onMapCreated: _onMapCreated,
             mapType: _currentMapType,
-            markers: markers,
+            markers: _markers,
             onCameraMove: _onCameraMove,
             initialCameraPosition: CameraPosition(
               target: _center,
@@ -308,7 +370,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                     border: InputBorder.none,
                                     hintText: onsearch
                                         ? '     กำลังหนาตำแหน่งของคุณ'
-                                        : '    ตำแหน่งของคุณ',
+                                        : '     ${data[0]['address_components'][1]['long_name']}',
                                   ),
                                 ),
                                 Row(
