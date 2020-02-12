@@ -14,15 +14,17 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   get() async {
-    var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=7.8776,98.3855&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
+    var url =
+        "https://maps.googleapis.com/maps/api/geocode/json?latlng=7.8776,98.3855&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
     var res = await http.get(url);
     var map = json.decode(utf8.decode(res.bodyBytes));
-    print("${map['results'][0]['formatted_address']}");
+    print("${map['results'][0]['address_components'][1]['long_name']}");
     setState(() {
       data = map['results'];
     });
   }
-  var data ;
+
+  var data;
   double sticky = 0.0;
   bool isloading = false;
   LocationData currentLocation;
@@ -76,8 +78,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   }
 
   void _onAddMarkerButtonPressed() {
-    InfoWindow infoWindow =
-        InfoWindow(title: "Location" + markers.length.toString());
+    InfoWindow infoWindow = InfoWindow(
+        title: data[0]['address_components'][1]['long_name'],
+        snippet: data[0]['formatted_address']);
     Marker marker = Marker(
       markerId: MarkerId(markers.length.toString()),
       infoWindow: infoWindow,
@@ -137,9 +140,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       body: Stack(
         children: <Widget>[
           GoogleMap(
-            onTap: (latlng){
-
-            },
+            onTap: (latlng) {},
             onCameraIdle: () async {
               setState(() {
                 sticky = 0;
