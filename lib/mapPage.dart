@@ -7,9 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
-const LatLng SOURCE_LOCATION = LatLng(7.8773126, 98.3853486);
-const LatLng DEST_LOCATION = LatLng(7.8761, 98.3794);
-
 class MapPage extends StatefulWidget {
   @override
   _MapPageState createState() => _MapPageState();
@@ -31,6 +28,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     });
   }
 
+  LatLng first_location; //= LatLng(7.8773126, 98.3853486);
+  LatLng final_location; //= LatLng(7.8761, 98.3794);
   var data;
   double sticky = 0.0;
   bool isloading = false;
@@ -51,13 +50,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   List<LatLng> polylineCoordinates = [];
   PolylinePoints polylinePoints = PolylinePoints();
   List<LatLng> latlng = List();
-  LatLng _new = LatLng(7.8773126, 98.3853486);
-  LatLng _news = LatLng(7.8796, 98.3814);
+  // LatLng _new = LatLng(7.8773126, 98.3853486);
+  // LatLng _news = LatLng(7.8796, 98.3814);
 
   String googleAPIKey = "AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
-
-  BitmapDescriptor sourceIcon;
-  BitmapDescriptor destinationIcon;
 
   getUserLocation() async {
     var location = Location();
@@ -84,36 +80,55 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
-    setMapPins();
-    setPolylines();
+    //setMapPins();
+    //setPolylines();
   }
 
-  void setMapPins() {
+  void _onAddMarkerButtonPressed() {
+    InfoWindow infoWindow = InfoWindow(
+        title: data['address_components'][1]['long_name'],
+        snippet: data['formatted_address']);
+    Marker markers = Marker(
+      markerId: MarkerId(_markers.length.toString()),
+      infoWindow: infoWindow,
+      position: centerPosition,
+      // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+    );
     setState(() {
-      _markers.add(Marker(
-          markerId: MarkerId('sourcePin'),
-          position: SOURCE_LOCATION,
-          icon: sourceIcon));
-      _markers.add(Marker(
-          markerId: MarkerId('destPin'),
-          position: DEST_LOCATION,
-          icon: destinationIcon));
+      _markers.add(markers);
+      if (_markers.length==2)
+      setPolylines();
+      else
+      _markers.add(markers);
+
+      print('marker : ${_markers.length}');
+      // latlng.add(_new);
+      // latlng.add(_news);
     });
+    // _polylines.add(Polyline(
+    //   polylineId: PolylineId(_center.toString()),
+    //   visible: true,
+    //   //latlng is List<LatLng>
+    //   points: latlng,
+    //   color: Colors.redAccent,
+    // ));
   }
 
   setPolylines() async {
     List<PointLatLng> result = await polylinePoints?.getRouteBetweenCoordinates(
         googleAPIKey,
-        SOURCE_LOCATION.latitude,
-        SOURCE_LOCATION.longitude,
-        DEST_LOCATION.latitude,
-        DEST_LOCATION.longitude);
+        _markers.elementAt(0).position.latitude,
+        _markers.elementAt(0).position.longitude,
+        _markers.elementAt(1).position.latitude,
+        _markers.elementAt(1).position.longitude);
     if (result.isNotEmpty) {
       result.forEach((PointLatLng point) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
     }
     setState(() {
+      print('first:   ${_markers.elementAt(0).position.longitude}');
+      print('fional:  ${_markers.elementAt(1).position.longitude}');
       Polyline polyline = Polyline(
           width: 5,
           polylineId: PolylineId('poly'),
@@ -128,31 +143,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     centerPosition = position.target;
     print(centerPosition.latitude);
     print(centerPosition.longitude);
-    getLocation(location: centerPosition);
-  }
-
-  void _onAddMarkerButtonPressed() {
-    InfoWindow infoWindow = InfoWindow(
-        title: data['address_components'][1]['long_name'],
-        snippet: data['formatted_address']);
-    Marker marker = Marker(
-      markerId: MarkerId(_markers.length.toString()),
-      infoWindow: infoWindow,
-      position: centerPosition,
-      // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-    );
-    setState(() {
-      _markers.add(marker);
-      latlng.add(_new);
-      latlng.add(_news);
-    });
-    // _polylines.add(Polyline(
-    //   polylineId: PolylineId(_center.toString()),
-    //   visible: true,
-    //   //latlng is List<LatLng>
-    //   points: latlng,
-    //   color: Colors.redAccent,
-    // ));
   }
 
   @override
@@ -206,6 +196,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               await Future.delayed(Duration(seconds: 2)); //ตอน get data
               setState(() {
                 onsearch = false;
+                getLocation(location: centerPosition);
               });
             },
             onCameraMoveStarted: () {
@@ -360,13 +351,13 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                             child: Column(
                               children: <Widget>[
                                 TextField(
-                                        decoration: InputDecoration(
-                                          border: InputBorder.none,
-                                          hintText: data == null
-                                              ? '     กำลังหนาตำแหน่งของคุณ'
-                                              : '    ${data['formatted_address']}' //bug
-                                        ),
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: data == null
+                                          ? '     กำลังหนาตำแหน่งของคุณ'
+                                          : '    ${data['formatted_address']}' //bug
                                       ),
+                                ),
                                 Row(
                                   children: <Widget>[
                                     Expanded(
