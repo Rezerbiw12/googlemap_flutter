@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
-import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 const LatLng SOURCE_LOCATION = LatLng(7.8773126, 98.3853486);
-const LatLng DEST_LOCATION = LatLng(7.8796, 98.3814);
+const LatLng DEST_LOCATION = LatLng(7.8761, 98.3794);
 
 class MapPage extends StatefulWidget {
   @override
@@ -17,14 +16,18 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
-  get() async {
-    var url =
-        "https://maps.googleapis.com/maps/api/geocode/json?latlng=7.8776,98.3855&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
+  getLocation({LatLng location}) async {
+    var head = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
+    var lat = "${location.latitude}";
+    var comma = ",";
+    var long = "${location.longitude}";
+    var key = "&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
+    var url = head + lat + comma + long + key;
     var res = await http.get(url);
     var map = json.decode(utf8.decode(res.bodyBytes));
     print("${map['results'][0]['address_components'][1]['long_name']}");
     setState(() {
-      data = map['results'];
+      data = map['results'][0];
     });
   }
 
@@ -40,7 +43,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   //Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
   int _markerIdCounter = 0;
   Set<Polyline> _polylines = {};
-  LatLng _lastMapPosition;
+  //LatLng _lastMapPosition;
   bool onsearch = false;
   bool yourlocation = true;
   AnimationController _controllers;
@@ -50,7 +53,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   List<LatLng> latlng = List();
   LatLng _new = LatLng(7.8773126, 98.3853486);
   LatLng _news = LatLng(7.8796, 98.3814);
-  static GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String googleAPIKey = "AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
 
@@ -88,12 +90,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   void setMapPins() {
     setState(() {
-      // source pin
       _markers.add(Marker(
           markerId: MarkerId('sourcePin'),
           position: SOURCE_LOCATION,
           icon: sourceIcon));
-      // destination pin
       _markers.add(Marker(
           markerId: MarkerId('destPin'),
           position: DEST_LOCATION,
@@ -109,37 +109,32 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         DEST_LOCATION.latitude,
         DEST_LOCATION.longitude);
     if (result.isNotEmpty) {
-      // loop through all PointLatLng points and convert them
-      // to a list of LatLng, required by the Polyline
       result.forEach((PointLatLng point) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
     }
     setState(() {
-      // create a Polyline instance
-      // with an id, an RGB color and the list of LatLng pairs
       Polyline polyline = Polyline(
+          width: 5,
           polylineId: PolylineId('poly'),
-          color: Color.fromARGB(255, 40, 122, 198),
+          color: Colors.blueAccent,
           points: polylineCoordinates);
-
-      // add the constructed polyline as a set of points
-      // to the polyline set, which will eventually
-      // end up showing up on the map
       _polylines.add(polyline);
     });
   }
 
-  void _onCameraMove(CameraPosition position) {
+  _onCameraMove(CameraPosition position) {
     Icon(Icons.map);
     centerPosition = position.target;
-    print('-----------------');
+    print(centerPosition.latitude);
+    print(centerPosition.longitude);
+    getLocation(location: centerPosition);
   }
 
   void _onAddMarkerButtonPressed() {
     InfoWindow infoWindow = InfoWindow(
-        title: data[0]['address_components'][1]['long_name'],
-        snippet: data[0]['formatted_address']);
+        title: data['address_components'][1]['long_name'],
+        snippet: data['formatted_address']);
     Marker marker = Marker(
       markerId: MarkerId(_markers.length.toString()),
       infoWindow: infoWindow,
@@ -151,27 +146,26 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       latlng.add(_new);
       latlng.add(_news);
     });
-    _polylines.add(Polyline(
-      polylineId: PolylineId(_center.toString()),
-      visible: true,
-      //latlng is List<LatLng>
-      points: latlng,
-      color: Colors.redAccent,
-    ));
+    // _polylines.add(Polyline(
+    //   polylineId: PolylineId(_center.toString()),
+    //   visible: true,
+    //   //latlng is List<LatLng>
+    //   points: latlng,
+    //   color: Colors.redAccent,
+    // ));
   }
 
   @override
   void initState() {
-    get();
+    getLocation();
     print('สร้าง map');
-
     _controllerb = AnimationController(
       vsync: this,
       lowerBound: 0.5,
       duration: Duration(seconds: 2),
     )..repeat();
     _center = LatLng(7.8773126, 98.3853486);
-    _lastMapPosition = _center;
+    //_lastMapPosition = _center;
     super.initState();
   }
 
@@ -366,13 +360,13 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                             child: Column(
                               children: <Widget>[
                                 TextField(
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: onsearch
-                                        ? '     กำลังหนาตำแหน่งของคุณ'
-                                        : '     ${data[0]['address_components'][1]['long_name']}',
-                                  ),
-                                ),
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          hintText: data == null
+                                              ? '     กำลังหนาตำแหน่งของคุณ'
+                                              : '    ${data['formatted_address']}' //bug
+                                        ),
+                                      ),
                                 Row(
                                   children: <Widget>[
                                     Expanded(
