@@ -13,33 +13,12 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
-  getLocation({LatLng location}) async {
-    var head = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
-    var lat = "${location.latitude}";
-    var comma = ",";
-    var long = "${location.longitude}";
-    var key = "&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
-    var url = head + lat + comma + long + key;
-    var res = await http.get(url);
-    var map = json.decode(utf8.decode(res.bodyBytes));
-
-    print("${map['results'][0]['address_components'][1]['long_name']}");
-    if (check == 1) {
-      setState(() {
-        data = map['results'][0];
-      });
-    } else {
-      setState(() {
-        data2 = map['results'][0];
-      });
-    }
-  }
-
   var check = 1;
   LatLng first_location;
   LatLng final_location;
   var data;
   var data2;
+  bool mylocation = false;
   double sticky = 0.0;
   bool isloading = false;
   LocationData currentLocation;
@@ -62,6 +41,28 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   String googleAPIKey = "AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
 
+  getLocation({LatLng location}) async {
+    var head = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
+    var lat = "${location.latitude}";
+    var comma = ",";
+    var long = "${location.longitude}";
+    var key = "&key=AIzaSyAIBSRxCOHKfzMqh5QV8Er6_tRYNFTudTE";
+    var url = head + lat + comma + long + key;
+    var res = await http.get(url);
+    var map = json.decode(utf8.decode(res.bodyBytes));
+
+    print("${map['results'][0]['address_components'][1]['long_name']}");
+    if (check == 1) {
+      setState(() {
+        data = map['results'][0];
+      });
+    } else {
+      setState(() {
+        data2 = map['results'][0];
+      });
+    }
+  }
+
   getUserLocation() async {
     var location = Location();
     try {
@@ -72,24 +73,28 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     }
   }
 
-  Future _goToMe() async {
+  _goToMe() async {
     final GoogleMapController controller = await _controller.future;
     currentLocation = await getUserLocation();
     controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(currentLocation.latitude, currentLocation.longitude),
-          zoom: 20,
+          zoom: 16,
         ),
       ),
     );
+    setState(() {
+      mylocation = true;
+      print('go_to_me :${mylocation.toString()}');
+    });
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
   }
 
-  void _onAddMarkerButtonPressed() {
+  _onAddMarkerButtonPressed() {
     InfoWindow infoWindow = InfoWindow(
         title: data['address_components'][1]['long_name'],
         snippet: data['formatted_address']);
@@ -103,13 +108,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       if (_markers.length == 2) {
         setPolylines();
       } else {
-
-          _polylines.clear();
-          _markers.clear();
-          setPolylines();
-          _markers.add(markers);
-          check = 2;
-        
+        _polylines.clear();
+        _markers.clear();
+        setPolylines();
+        _markers.add(markers);
+        check = 2;
       }
       print('polyline: ${_polylines.length}');
       print('marker :${_markers.length}');
@@ -155,13 +158,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   @override
   void initState() {
     getLocation();
+    _goToMe();
     print('สร้าง map');
     _controllerb = AnimationController(
       vsync: this,
       lowerBound: 0.5,
       duration: Duration(seconds: 2),
     )..repeat();
-    _center = LatLng(7.8773126, 98.3853486);
+    _center = LatLng(7.8776, 98.3855);
     //_lastMapPosition = _center;
     super.initState();
   }
@@ -185,7 +189,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         actions: <Widget>[
           IconButton(
               icon: Icon(
-                Icons.near_me,
+                Icons.refresh,
                 color: Colors.black,
               ),
               onPressed: _goToMe)
@@ -211,9 +215,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               },
               onCameraMoveStarted: () {
                 setState(() {
+                  mylocation = false;
                   sticky = 6;
                   onsearch = false;
                   yourlocation = false;
+                  print('camera_move_start : ${mylocation.toString()}');
                 });
                 if (yourlocation == false) {
                   _controllers.reset();
@@ -327,86 +333,119 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16),
               child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    child: Card(
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                              height: 120,
-                              child: Column(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 15, top: 15),
-                                    child: Column(
-                                      children: <Widget>[
-                                        Image.network(
-                                          'https://download.seaicons.com/icons/danieledesantis/playstation-flat/512/playstation-circle-black-and-white-icon.png',
-                                          width: 20,
-                                          height: 20,
-                                        )
-                                      ],
-                                    ),
+                alignment: Alignment.topRight,
+                child:
+                    (mylocation == true) 
+                        ? null
+                        : Container(
+                            child: GestureDetector(
+                                onTap: _goToMe,
+                                child: new Container(
+                                  height: 35.0,
+                                  width: 35.0,
+                                  child: Center(
+                                    child: Image.network(
+                                        'https://cdn3.iconfinder.com/data/icons/mobile-friendly-ui/100/crosshair-512.png'),
                                   ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 15, top: 43),
-                                    child: Column(
-                                      children: <Widget>[
-                                        Image.network(
-                                          'https://freesvg.org/img/flat_location_logo.png',
-                                          width: 20,
-                                          height: 20,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              )),
-                          Expanded(
-                            child: Container(
-                              color: Colors.white,
-                              height: 120,
-                              child: Column(
-                                children: <Widget>[
-                                  TextField(
-                                    decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: data == null ||
-                                                (onsearch && check == 1)
-                                            ? '     กำลังหาตำแหน่งของคุณ'
-                                            : '    ${data['formatted_address']}' //bug
-                                        ),
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Container(
-                                          margin: const EdgeInsets.only(
-                                              left: 10.0, right: 20.0),
-                                          child: Divider(
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey,
+                                        blurRadius: 5.0,
+                                        offset: Offset(5.0, 5.0),
+                                      )
                                     ],
                                   ),
-                                  TextField(
-                                      decoration: InputDecoration(
-                                          border: InputBorder.none,
-                                          hintText: data2 == null ||
-                                                  (onsearch && check == 2)
-                                              ? '     ฉันกำลังไป'
-                                              : '    ${data2['formatted_address']}'))
-                                ],
-                              ),
+                                )),
+                          ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  child: Card(
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                            height: 120,
+                            child: Column(
+                              children: <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(left: 15, top: 15),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Image.network(
+                                        'https://download.seaicons.com/icons/danieledesantis/playstation-flat/512/playstation-circle-black-and-white-icon.png',
+                                        width: 20,
+                                        height: 20,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 15, top: 43),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Image.network(
+                                        'https://freesvg.org/img/flat_location_logo.png',
+                                        width: 20,
+                                        height: 20,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+                        Expanded(
+                          child: Container(
+                            color: Colors.white,
+                            height: 120,
+                            child: Column(
+                              children: <Widget>[
+                                TextField(
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: data == null ||
+                                              (onsearch && check == 1)
+                                          ? '     กำลังหาตำแหน่งของคุณ'
+                                          : '    ${data['formatted_address']}' //bug
+                                      ),
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Container(
+                                        margin: const EdgeInsets.only(
+                                            left: 10.0, right: 20.0),
+                                        child: Divider(
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TextField(
+                                    decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: data2 == null ||
+                                                (onsearch && check == 2)
+                                            ? '     ฉันกำลังไป'
+                                            : '    ${data2['formatted_address']}'))
+                              ],
                             ),
-                          )
-                        ],
-                      ),
+                          ),
+                        )
+                      ],
                     ),
-                  )),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
