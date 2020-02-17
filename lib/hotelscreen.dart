@@ -6,7 +6,48 @@ class HotelScreen extends StatefulWidget {
 }
 
 class _HotelScreenState extends State<HotelScreen> {
-  var data;
+  var data = [
+    {
+      'id': 1,
+      'name': 'Grand Royal Hotel',
+      'price': '180',
+      'km': '2',
+      'review': '80',
+      'url':
+          'https://cdn.content.tuigroup.com/adamtui/2016_9/28_18/34f75ef4-3a6d-4650-ab04-a68f0133fdbe/NRV_SOR_1672WebOriginalCompressed.jpg?i10c=img.resize(width:1080)'
+    },
+    {
+      'id': 2,
+      'name': 'Queen Hotel',
+      'price': '220',
+      'km': '3',
+      'review': '200',
+      'url':
+          'https://q-cf.bstatic.com/images/hotel/max1024x768/681/68184730.jpg'
+    },
+    {
+      'id': 3,
+      'name': 'Coffee Hotel',
+      'price': '150',
+      'km': '4',
+      'review': '150',
+      'url':
+          'https://pix10.agoda.net/hotelImages/104/104972/104972_16072716330044991252.jpg?s=1024x768'
+    }
+  ];
+  getdata() {
+    setState(() {
+      print(data);
+    });
+  }
+
+  @override
+  void initState() {
+    getdata();
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +85,7 @@ class _HotelScreenState extends State<HotelScreen> {
       body: Column(
         children: <Widget>[
           Container(
-            height: 180,
+            height: 150,
             color: Colors.grey[200],
             child: Column(
               children: <Widget>[
@@ -54,19 +95,31 @@ class _HotelScreenState extends State<HotelScreen> {
                   child: Row(
                     children: <Widget>[
                       Expanded(
-                        flex: 4,
-                        child: TextFormField(
-                          decoration: new InputDecoration(
-                            labelText: "London",
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: new OutlineInputBorder(
-                              borderRadius: new BorderRadius.circular(25.0),
-                              borderSide: new BorderSide(),
+                          flex: 4,
+                          child: Theme(
+                            data: Theme.of(context)
+                                .copyWith(splashColor: Colors.transparent),
+                            child: TextField(
+                              autofocus: false,
+                              style: TextStyle(
+                                  fontSize: 18.0, color: Colors.black26),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: 'London',
+                                contentPadding: const EdgeInsets.only(
+                                    left: 14.0, bottom: 8.0, top: 8.0),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius: BorderRadius.circular(25.7),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius: BorderRadius.circular(25.7),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
+                          )),
                       Expanded(
                         flex: 1,
                         child: Container(
@@ -82,7 +135,7 @@ class _HotelScreenState extends State<HotelScreen> {
                               )),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.greenAccent,
+                                color: Colors.teal[300],
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
@@ -108,7 +161,10 @@ class _HotelScreenState extends State<HotelScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text('Choose Date'),
+                              Text(
+                                'Choose Date',
+                                style: TextStyle(color: Colors.black26),
+                              ),
                               Text(
                                 '12 Dec - 22 Dec',
                                 style: TextStyle(
@@ -122,13 +178,16 @@ class _HotelScreenState extends State<HotelScreen> {
                         child: Row(
                           children: <Widget>[
                             Container(
-                              height: 60,
+                              height: 35,
                               child: VerticalDivider(color: Colors.black26),
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text('Number of Rooms'),
+                                Text(
+                                  'Number of Rooms',
+                                  style: TextStyle(color: Colors.black26),
+                                ),
                                 Text(
                                   '1 Room - 2 Adults',
                                   style: TextStyle(
@@ -149,14 +208,14 @@ class _HotelScreenState extends State<HotelScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
             child: Container(
-              color: Colors.white70,
               height: 60,
               child: Row(
                 children: <Widget>[
                   Expanded(
                     child: Text(
                       '530 hotels found',
-                      style: TextStyle(fontWeight: FontWeight.w500,fontSize: 15),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                     ),
                   ),
                   Expanded(
@@ -165,13 +224,14 @@ class _HotelScreenState extends State<HotelScreen> {
                     children: <Widget>[
                       Text(
                         'Filters',
-                        style: TextStyle(fontWeight: FontWeight.w500,fontSize: 19),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 19),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: Icon(
                           Icons.sort,
-                          color: Colors.greenAccent,
+                          color: Colors.teal[300],
                           size: 40,
                         ),
                       )
@@ -181,124 +241,135 @@ class _HotelScreenState extends State<HotelScreen> {
               ),
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+          Expanded(child: ListView.builder(
+            itemCount: data == null ? 0 : data.length,
+            itemBuilder: (context,index){
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Container(
+            padding: EdgeInsets.only(left: 10, right: 10),
             height: MediaQuery.of(context).size.height * 0.45,
             child: Card(
-              color: Colors.white,
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              elevation: 5,
-              child: Container(
-                child: Center(
-                  child: Column(
-                    children: <Widget>[
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                  'https://cdn.content.tuigroup.com/adamtui/2016_9/28_18/34f75ef4-3a6d-4650-ab04-a68f0133fdbe/NRV_SOR_1672WebOriginalCompressed.jpg?i10c=img.resize(width:1080)'),
-                              fit: BoxFit.cover,
+                color: Colors.white,
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                elevation: 5,
+                child: Container(
+                  child: Center(
+                    child: Column(
+                      children: <Widget>[
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                  data[index]['url']
+                                ),
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Align(
-                              alignment: Alignment.topRight,
-                              child: Container(
-                                height: 35.0,
-                                width: 35.0,
-                                child: Center(
-                                    child: Icon(
-                                  Icons.favorite_border,
-                                  color: Colors.greenAccent,
-                                )),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Align(
+                                alignment: Alignment.topRight,
+                                child: Container(
+                                  height: 35.0,
+                                  width: 35.0,
+                                  child: Center(
+                                      child: Icon(
+                                    Icons.favorite_border,
+                                    color: Colors.teal[300],
+                                  )),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                          child: Container(
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              flex: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 15,top: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text('Grand Royal Hotel',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20)),
-                                    Row(
-                                      children: <Widget>[
-                                        Text('Wembley, London '),
-                                        Icon(
-                                          Icons.room,
-                                          color: Colors.greenAccent,
-                                        ),
-                                        Text('2 km to city')
-                                      ],
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(Icons.star,
-                                            color: Colors.greenAccent),
-                                        Icon(Icons.star,
-                                            color: Colors.greenAccent),
-                                        Icon(Icons.star,
-                                            color: Colors.greenAccent),
-                                        Icon(Icons.star,
-                                            color: Colors.greenAccent),
-                                        Icon(Icons.star_border,
-                                            color: Colors.greenAccent),
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 8),
-                                              child: Text('80 Reviews'),
-                                            )
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                                flex: 1,
+                        Expanded(
+                            child: Container(
+                          child: Row(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 2,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding:
+                                      const EdgeInsets.only(left: 15, top: 8),
                                   child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Text(
-                                        '180 Bath',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20),
+                                      Text(data[index]['name'],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20)),
+                                      Row(
+                                        children: <Widget>[
+                                          Text('Wembley, London '),
+                                          Icon(
+                                            Icons.room,
+                                            color: Colors.teal[300],
+                                          ),
+                                          Text('${data[index]['km']} km to city')
+                                        ],
                                       ),
-                                      Text('/per night'),
+                                      Row(
+                                        children: <Widget>[
+                                          Icon(Icons.star,
+                                              color: Colors.teal[300]),
+                                          Icon(Icons.star,
+                                              color: Colors.teal[300]),
+                                          Icon(Icons.star,
+                                              color: Colors.teal[300]),
+                                          Icon(Icons.star,
+                                              color: Colors.teal[300]),
+                                          Icon(Icons.star_border,
+                                              color: Colors.teal[300]),
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 8),
+                                            child: Text('${data[index]['review']} Reviews'),
+                                          )
+                                        ],
+                                      )
                                     ],
                                   ),
-                                ))
-                          ],
-                        ),
-                        color: Colors.white,
-                      ))
-                    ],
+                                ),
+                              ),
+                              Expanded(
+                                  flex: 1,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      children: <Widget>[
+                                        Text(
+                                          ' ${data[index]['price']} Bath',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20),
+                                        ),
+                                        Text('/per night'),
+                                      ],
+                                    ),
+                                  ))
+                            ],
+                          ),
+                          color: Colors.white,
+                        ))
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ),
           ),
+              );
+            },
+          ))
         ],
       ),
     );
