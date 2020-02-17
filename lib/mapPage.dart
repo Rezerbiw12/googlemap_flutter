@@ -120,6 +120,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   }
 
   setPolylines() async {
+    _polylines.clear();
+    print('marker:${_markers.toString()}');
     List<PointLatLng> result = await polylinePoints?.getRouteBetweenCoordinates(
         googleAPIKey,
         _markers.elementAt(0).position.latitude,

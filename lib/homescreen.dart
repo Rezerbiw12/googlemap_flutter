@@ -1,5 +1,6 @@
 import 'package:location/location.dart';
 import 'package:flutter/material.dart';
+import 'package:ui_test/hotelscreen.dart';
 import 'package:ui_test/mapPage.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -22,17 +23,33 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Center(
-          child: MaterialButton(
-            color: Colors.white,
-            child: Text('Google Map'),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (BuildContext context) => MapPage(),
+          child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              MaterialButton(
+                color: Colors.white,
+                child: Text('Google Map'),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => MapPage(),
+                  ),
+                ),
               ),
-            ),
+              MaterialButton(
+                color: Colors.white,
+                child: Text('Hotel Screen'),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => HotelScreen(),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        )
       ),
     );
   }
