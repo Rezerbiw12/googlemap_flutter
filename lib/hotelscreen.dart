@@ -33,7 +33,16 @@ class _HotelScreenState extends State<HotelScreen> {
       'review': '150',
       'url':
           'https://pix10.agoda.net/hotelImages/104/104972/104972_16072716330044991252.jpg?s=1024x768'
-    }
+    },
+    {
+      'id': 4,
+      'name': 'The Grand Riverside',
+      'price': '150',
+      'km': '10',
+      'review': '50',
+      'url':
+          'https://static.wixstatic.com/media/fee523_6f4192ab11c340ad86a163d735c92e99.jpg'
+    },
   ];
   getdata() {
     setState(() {
@@ -95,18 +104,32 @@ class _HotelScreenState extends State<HotelScreen> {
                   child: Row(
                     children: <Widget>[
                       Expanded(
-                          flex: 4,
-                          child: Theme(
-                            data: Theme.of(context)
-                                .copyWith(splashColor: Colors.transparent),
-                            child: TextField(
+                        flex: 4,
+                        child: Theme(
+                          data: Theme.of(context)
+                              .copyWith(splashColor: Colors.transparent),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                boxShadow: [
+                                  BoxShadow(
+                                      blurRadius: 20,
+                                      spreadRadius: -15,
+                                      offset: Offset(3, 3))
+                                ]),
+                            child: TextFormField(
                               autofocus: false,
                               style: TextStyle(
-                                  fontSize: 18.0, color: Colors.black26),
+                                  fontSize: 17.0, color: Colors.black),
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: Colors.white,
                                 hintText: 'London',
+                                hintStyle: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 17,
+                                    color: Colors.black26),
                                 contentPadding: const EdgeInsets.only(
                                     left: 14.0, bottom: 8.0, top: 8.0),
                                 focusedBorder: OutlineInputBorder(
@@ -119,7 +142,9 @@ class _HotelScreenState extends State<HotelScreen> {
                                 ),
                               ),
                             ),
-                          )),
+                          ),
+                        ),
+                      ),
                       Expanded(
                         flex: 1,
                         child: Container(
@@ -129,18 +154,19 @@ class _HotelScreenState extends State<HotelScreen> {
                               height: 50.0,
                               width: 50.0,
                               child: Center(
-                                  child: Icon(
-                                Icons.search,
-                                color: Colors.white,
-                              )),
+                                child: Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                ),
+                              ),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.teal[300],
+                                color: Colors.teal[200],
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey,
                                     blurRadius: 5.0,
-                                    offset: Offset(5.0, 5.0),
+                                    //offset: Offset(5.0, 5.0),
                                   )
                                 ],
                               ),
@@ -231,7 +257,7 @@ class _HotelScreenState extends State<HotelScreen> {
                         padding: const EdgeInsets.only(left: 8),
                         child: Icon(
                           Icons.sort,
-                          color: Colors.teal[300],
+                          color: Colors.teal[200],
                           size: 40,
                         ),
                       )
@@ -241,132 +267,134 @@ class _HotelScreenState extends State<HotelScreen> {
               ),
             ),
           ),
-          Expanded(child: ListView.builder(
+          Expanded(
+              child: ListView.builder(
             itemCount: data == null ? 0 : data.length,
-            itemBuilder: (context,index){
+            itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 15),
                 child: Container(
-            padding: EdgeInsets.only(left: 10, right: 10),
-            height: MediaQuery.of(context).size.height * 0.45,
-            child: Card(
-                color: Colors.white,
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                elevation: 5,
-                child: Container(
-                  child: Center(
-                    child: Column(
-                      children: <Widget>[
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  data[index]['url']
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: Card(
+                    color: Colors.white,
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    elevation: 3,
+                    child: Container(
+                      child: Center(
+                        child: Column(
+                          children: <Widget>[
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(data[index]['url']),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Align(
-                                alignment: Alignment.topRight,
-                                child: Container(
-                                  height: 35.0,
-                                  width: 35.0,
-                                  child: Center(
-                                      child: Icon(
-                                    Icons.favorite_border,
-                                    color: Colors.teal[300],
-                                  )),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Align(
+                                    alignment: Alignment.topRight,
+                                    child: Container(
+                                      height: 35.0,
+                                      width: 35.0,
+                                      child: Center(
+                                          child: Icon(
+                                        Icons.favorite_border,
+                                        color: Colors.teal[200],
+                                      )),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                        Expanded(
-                            child: Container(
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                flex: 2,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 15, top: 8),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(data[index]['name'],
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20)),
-                                      Row(
+                            Expanded(
+                                child: Container(
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 2,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 15, top: 8),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          Text('Wembley, London '),
-                                          Icon(
-                                            Icons.room,
-                                            color: Colors.teal[300],
+                                          Text(data[index]['name'],
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20)),
+                                          Row(
+                                            children: <Widget>[
+                                              Text('Wembley, London '),
+                                              Icon(
+                                                Icons.room,
+                                                color: Colors.teal[200],
+                                              ),
+                                              Text(
+                                                  '${data[index]['km']} km to city')
+                                            ],
                                           ),
-                                          Text('${data[index]['km']} km to city')
-                                        ],
-                                      ),
-                                      Row(
-                                        children: <Widget>[
-                                          Icon(Icons.star,
-                                              color: Colors.teal[300]),
-                                          Icon(Icons.star,
-                                              color: Colors.teal[300]),
-                                          Icon(Icons.star,
-                                              color: Colors.teal[300]),
-                                          Icon(Icons.star,
-                                              color: Colors.teal[300]),
-                                          Icon(Icons.star_border,
-                                              color: Colors.teal[300]),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 8),
-                                            child: Text('${data[index]['review']} Reviews'),
+                                          Row(
+                                            children: <Widget>[
+                                              Icon(Icons.star,
+                                                  color: Colors.teal[200]),
+                                              Icon(Icons.star,
+                                                  color: Colors.teal[200]),
+                                              Icon(Icons.star,
+                                                  color: Colors.teal[200]),
+                                              Icon(Icons.star,
+                                                  color: Colors.teal[200]),
+                                              Icon(Icons.star_border,
+                                                  color: Colors.teal[200]),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 8),
+                                                child: Text(
+                                                    '${data[index]['review']} Reviews'),
+                                              )
+                                            ],
                                           )
                                         ],
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                  flex: 1,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      children: <Widget>[
-                                        Text(
-                                          ' ${data[index]['price']} Bath',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20),
-                                        ),
-                                        Text('/per night'),
-                                      ],
+                                      ),
                                     ),
-                                  ))
-                            ],
-                          ),
-                          color: Colors.white,
-                        ))
-                      ],
+                                  ),
+                                  Expanded(
+                                      flex: 1,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          children: <Widget>[
+                                            Text(
+                                              ' ${data[index]['price']} Bath',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20),
+                                            ),
+                                            Text('/per night'),
+                                          ],
+                                        ),
+                                      ))
+                                ],
+                              ),
+                              color: Colors.white,
+                            ))
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-            ),
-          ),
               );
             },
           ))
